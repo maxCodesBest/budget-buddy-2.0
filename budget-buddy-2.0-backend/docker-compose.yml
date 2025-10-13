@@ -1,0 +1,12 @@
+version: '3.8'
+services:
+  mongodb:
+    image: mongodb/mongodb-community-server:8.0-ubuntu2204
+    container_name: budget-buddy-mongo
+    ports:
+      - '27017:27017'
+    restart: unless-stopped
+    volumes:
+      - mongo-data:/data/db
+volumes:
+  mongo-data:
