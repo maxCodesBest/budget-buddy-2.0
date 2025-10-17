@@ -7,6 +7,10 @@ import {
   ExpenseSchema,
   EXPENSE_MODEL_NAME,
 } from './schemas/expense-document.schema';
+import {
+  SpendingCapSchema,
+  SPENDING_CAP_MODEL_NAME,
+} from './schemas/spending-cap.schema';
 
 @Module({
   imports: [
@@ -30,6 +34,7 @@ import {
     }),
     MongooseModule.forFeature([
       { name: EXPENSE_MODEL_NAME, schema: ExpenseSchema },
+      { name: SPENDING_CAP_MODEL_NAME, schema: SpendingCapSchema },
     ]),
   ],
   controllers: [AppController],

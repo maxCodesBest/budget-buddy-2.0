@@ -24,4 +24,51 @@ export class AppController {
     });
     return { value };
   }
+
+  // Spending cap endpoints
+  @Get('spending-cap')
+  async getSpendingCap(
+    @Query('category') category: string,
+    @Query('subCategory') subCategory: string,
+  ) {
+    const value = await this.expenseService.getSpendingCap({
+      category,
+      subCategory,
+    });
+    return { value };
+  }
+
+  @Post('spending-cap')
+  async setSpendingCap(
+    @Body('category') category: string,
+    @Body('subCategory') subCategory: string,
+    @Body('cap') cap: number,
+  ) {
+    const value = await this.expenseService.setSpendingCap({
+      category,
+      subCategory,
+      cap,
+    });
+    return { value };
+  }
+
+  // Aggregations across all months/years
+  @Get('totals/by-category')
+  async getTotalsByCategory() {
+    const value = await this.expenseService.getAllCategoryTotals();
+    return { value };
+  }
+
+  @Get('totals/by-subcategories')
+  async getTotalsBySubcategories(@Query('category') category: string) {
+    const value =
+      await this.expenseService.getCategorySubcategoryTotals(category);
+    return { value };
+  }
+
+  @Get('totals/by-month')
+  async getTotalsByMonth() {
+    const value = await this.expenseService.getMonthlyTotals();
+    return { value };
+  }
 }

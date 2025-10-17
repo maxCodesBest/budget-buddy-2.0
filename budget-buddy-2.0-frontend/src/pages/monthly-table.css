@@ -229,6 +229,12 @@
   border-color: var(--accent);
 }
 
+.summary-row.over-cap {
+  border-color: rgba(239, 68, 68, 0.6); /* red-500 */
+  box-shadow: 0 0 0 6px rgba(239, 68, 68, 0.2),
+    0 8px 24px -12px rgba(239, 68, 68, 0.4);
+}
+
 .summary-divider {
   height: 1px;
   background: var(--border);

@@ -18,6 +18,9 @@ export const ExpenseTable = () => {
   const [year, setYear] = useState(new Date().getFullYear());
   const [month, setMonth] = useState(new Date().getMonth() + 1); // JS months are 0-based
   const [data, setData] = useState<ExpenseData | null>(null);
+  const [caps, setCaps] = useState<
+    Record<string, Record<string, number | null>>
+  >({});
   const [selected, setSelected] = useState<{
     category: string;
     subcategory: string;
@@ -74,6 +77,59 @@ export const ExpenseTable = () => {
   useEffect(() => {
     fetchData();
   }, [year, month]);
+
+  // Load persistent caps once (caps are global, not month-dependent)
+  useEffect(() => {
+    async function fetchCaps() {
+      const pairs: Array<{
+        category: keyof typeof PRESET_SUBCATEGORIES;
+        sub: string;
+      }> = [];
+      (
+        Object.keys(PRESET_SUBCATEGORIES) as Array<
+          keyof typeof PRESET_SUBCATEGORIES
+        >
+      ).forEach((cat) => {
+        PRESET_SUBCATEGORIES[cat].forEach((sub) =>
+          pairs.push({ category: cat, sub })
+        );
+      });
+
+      const results = await Promise.all(
+        pairs.map(({ category, sub }) =>
+          axios
+            .get(
+              `http://localhost:3000/expenses/spending-cap?category=${encodeURIComponent(
+                String(category)
+              )}&subCategory=${encodeURIComponent(sub)}`
+            )
+            .then((res) => ({ category, sub, value: res.data?.value }))
+            .catch(() => ({ category, sub, value: null }))
+        )
+      );
+
+      const next: Record<string, Record<string, number | null>> = {};
+      (
+        Object.keys(PRESET_SUBCATEGORIES) as Array<
+          keyof typeof PRESET_SUBCATEGORIES
+        >
+      ).forEach((cat) => {
+        next[cat] = {};
+        PRESET_SUBCATEGORIES[cat].forEach((sub) => {
+          const found = results.find(
+            (r) => r.category === cat && r.sub === sub
+          );
+          next[cat][sub] =
+            found?.value === null || found?.value === undefined
+              ? null
+              : Number(found.value);
+        });
+      });
+      setCaps(next);
+    }
+
+    fetchCaps();
+  }, []);
 
   const fetchData = async () => {
     const res = await axios.get(
@@ -190,6 +246,41 @@ export const ExpenseTable = () => {
       grand += sum;
     });
     return { perCategory, grand };
+  };
+
+  const computeOverCaps = () => {
+    if (!data)
+      return [] as Array<{
+        category: string;
+        subCategory: string;
+        amount: number;
+        cap: number;
+      }>;
+    const items: Array<{
+      category: string;
+      subCategory: string;
+      amount: number;
+      cap: number;
+    }> = [];
+    (
+      Object.keys(PRESET_SUBCATEGORIES) as Array<
+        keyof typeof PRESET_SUBCATEGORIES
+      >
+    ).forEach((cat) => {
+      PRESET_SUBCATEGORIES[cat].forEach((sub) => {
+        const amount = Number((data.categories[cat] || {})[sub] ?? 0);
+        const cap = caps?.[cat]?.[sub];
+        if (cap !== null && cap !== undefined && amount > Number(cap)) {
+          items.push({
+            category: String(cat),
+            subCategory: sub,
+            amount,
+            cap: Number(cap),
+          });
+        }
+      });
+    });
+    return items;
   };
 
   return (
@@ -328,7 +419,11 @@ export const ExpenseTable = () => {
         />
       </div>
 
-      <Summary totals={computeTotals()} formatter={formatAmount} />
+      <Summary
+        totals={computeTotals()}
+        formatter={formatAmount}
+        overCaps={computeOverCaps()}
+      />
     </div>
   );
 };
@@ -376,8 +471,14 @@ function Calculator(props: {
 function Summary(props: {
   totals: { perCategory: Record<string, number>; grand: number };
   formatter: (n: number) => string;
+  overCaps: Array<{
+    category: string;
+    subCategory: string;
+    amount: number;
+    cap: number;
+  }>;
 }) {
-  const { totals, formatter } = props;
+  const { totals, formatter, overCaps } = props;
   const ordered = [
     "Necessary",
     "Self Investment",
@@ -409,6 +510,24 @@ function Summary(props: {
           <span>Total</span>
           <strong>{formatter(totals.grand)}</strong>
         </div>
+        {overCaps.length > 0 && (
+          <>
+            <div className="summary-divider" />
+            {overCaps.map((item) => (
+              <div
+                className="summary-row over-cap"
+                key={`${item.category}:${item.subCategory}`}
+              >
+                <span>
+                  {item.category} • {item.subCategory}
+                </span>
+                <strong title={`Cap: ${formatter(item.cap)}`}>
+                  {formatter(item.amount)}
+                </strong>
+              </div>
+            ))}
+          </>
+        )}
       </div>
     </section>
   );

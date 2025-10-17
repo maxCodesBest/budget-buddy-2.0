@@ -1,0 +1,57 @@
+.analytics-content {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 16px;
+}
+
+.analytics-overview {
+  grid-column: 1 / -1;
+}
+
+.analytics-grid {
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.analytics-card-inner {
+  display: grid;
+  grid-template-columns: 320px 1fr;
+  gap: 16px;
+  align-items: start;
+}
+
+/* Prevent grid children from forcing overflow */
+.analytics-card-inner > * {
+  min-width: 0;
+}
+
+@media (max-width: 900px) {
+  .analytics-card-inner {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Clip any accidental overflow within analytics cards only */
+.analytics-content .category-card {
+  overflow: hidden;
+}
+
+/* Make legend scrollable and text wrap/ellipsis to avoid overlap */
+.legend-list {
+  min-width: 0;
+  overflow: auto;
+  max-height: 240px;
+}
+
+.legend-list .summary-row {
+  overflow: hidden;
+}
+
+.legend-list .summary-row span {
+  min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}

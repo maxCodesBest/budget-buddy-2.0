@@ -1,0 +1,130 @@
+.app-shell {
+  display: block;
+  width: 100%;
+}
+
+.app-main {
+  min-width: 0;
+  width: 100%;
+  box-sizing: border-box;
+  padding-left: 56px; /* closed width */
+  overflow-x: hidden; /* guard against subtrees causing horizontal scroll */
+}
+
+.app-shell.nav-open .app-main {
+  padding-left: 220px; /* open width */
+}
+
+.right-nav {
+  position: fixed;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 60px; /* give a hair more space so centered icons don't touch sides */
+  transition: width 200ms ease, box-shadow 200ms ease;
+  background: #0b1220; /* opaque */
+  border-right: 1px solid rgba(148, 163, 184, 0.2);
+  box-shadow: 10px 0 24px -16px rgba(2, 8, 23, 0.6);
+  display: flex;
+  flex-direction: column;
+  z-index: 30;
+}
+
+.right-nav.open {
+  width: 220px;
+}
+
+.right-nav-toggle {
+  margin: 10px;
+  align-self: flex-start;
+  background: transparent;
+  color: #e5e7eb;
+  border: 1px solid rgba(148, 163, 184, 0.35);
+  border-radius: 8px;
+  padding: 6px 8px;
+  cursor: pointer;
+}
+
+.right-nav-content {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 8px;
+}
+
+/* Closed state: center the icon squares and hide labels */
+.right-nav.closed .nav-item {
+  grid-template-columns: 1fr;
+  justify-items: center;
+  padding: 8px 0; /* remove horizontal padding so 40px icon centers within 40px column */
+}
+
+.right-nav.closed .nav-label {
+  display: none;
+}
+
+/* Open state: keep icon column fixed and left-align text */
+.right-nav.open .nav-item {
+  grid-template-columns: 40px 1fr;
+  justify-items: start;
+}
+
+.nav-item {
+  display: grid;
+  grid-template-columns: 40px 1fr;
+  align-items: center;
+  gap: 10px;
+  text-decoration: none;
+  color: #e5e7eb;
+  padding: 8px;
+  border-radius: 10px;
+  border: none; /* keep only the icon square border to avoid double rectangles */
+  background: transparent;
+  cursor: pointer;
+  width: 100%;
+}
+
+.nav-item:hover {
+  background: rgba(34, 211, 238, 0.08);
+  border-color: rgba(34, 211, 238, 0.4);
+}
+
+.nav-item.active {
+  background: transparent; /* remove row highlight; we highlight the square instead */
+  font-weight: 800;
+}
+
+.nav-icon {
+  font-size: 18px;
+  width: 36px;
+  height: 36px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  border: 1px solid rgba(148, 163, 184, 0.2);
+  border-radius: 8px;
+  justify-self: center; /* icon stays centered in its column */
+}
+
+.nav-item:focus {
+  outline: none;
+}
+
+/* Emphasize the single inner square on hover/active */
+.nav-item:hover .nav-icon,
+.nav-item.active .nav-icon {
+  border-color: rgba(34, 211, 238, 0.6);
+  box-shadow: none; /* avoid extra rounded outline */
+  background: rgba(
+    34,
+    211,
+    238,
+    0.12
+  ); /* square highlight aligned with border */
+}
+
+.nav-label {
+  font-weight: 600;
+  text-align: left;
+}
