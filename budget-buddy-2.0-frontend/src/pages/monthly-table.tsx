@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import axios from "axios";
 import "./monthly-table.css";
 
@@ -70,7 +70,14 @@ export const ExpenseTable = () => {
       "Electronics",
       "Clothing and footwear",
     ],
-    Car: ["Maintenance", "Fines", "Insurance", "Gasoline", "Equipment"],
+    Car: [
+      "Maintenance",
+      "Fines",
+      "Insurance",
+      "Gasoline",
+      "Equipment",
+      "Parking",
+    ],
     General: ["Public transportation", "Psychologist", "Gifts"],
   };
 
@@ -435,6 +442,14 @@ function Calculator(props: {
 }) {
   const { enabled, selectedLabel, onSubmit } = props;
   const [value, setValue] = useState<string>("");
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    if (enabled && inputRef.current) {
+      inputRef.current.focus();
+      inputRef.current.select();
+    }
+  }, [enabled, selectedLabel]);
 
   return (
     <aside className={`calculator ${enabled ? "enabled" : "disabled"}`}>
@@ -447,6 +462,7 @@ function Calculator(props: {
         type="text"
         inputMode="decimal"
         placeholder={enabled ? "Enter amount and press Enter" : "Disabled"}
+        ref={inputRef}
         value={value}
         onChange={(e) => {
           const cleaned = e.target.value.replace(/[^0-9.\-]/g, "");

@@ -43,7 +43,14 @@ const PRESET_SUBCATEGORIES: Record<(typeof CATEGORY_ORDER)[number], string[]> =
       "Electronics",
       "Clothing and footwear",
     ],
-    Car: ["Maintenance", "Fines", "Insurance", "Gasoline", "Equipment"],
+    Car: [
+      "Maintenance",
+      "Fines",
+      "Insurance",
+      "Gasoline",
+      "Equipment",
+      "Parking",
+    ],
     General: ["Public transportation", "Psychologist", "Gifts"],
   };
 
