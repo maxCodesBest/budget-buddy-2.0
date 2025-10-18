@@ -2,7 +2,7 @@ import { Body, Controller, Get, Post, Query } from '@nestjs/common';
 import { ExpenseService } from './expenses.service';
 
 @Controller('expenses')
-export class AppController {
+export class ExpensesController {
   constructor(private readonly expenseService: ExpenseService) {}
 
   @Get('')
@@ -52,7 +52,6 @@ export class AppController {
     return { value };
   }
 
-  // Aggregations across all months/years
   @Get('totals/by-category')
   async getTotalsByCategory() {
     const value = await this.expenseService.getAllCategoryTotals();

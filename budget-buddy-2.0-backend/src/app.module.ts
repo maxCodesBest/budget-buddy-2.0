@@ -1,7 +1,7 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { MongooseModule } from '@nestjs/mongoose';
-import { AppController } from './app.controller';
+import { ExpensesController } from './expenses.controller';
 import { ExpenseService } from './expenses.service';
 import {
   ExpenseSchema,
@@ -37,7 +37,7 @@ import {
       { name: SPENDING_CAP_MODEL_NAME, schema: SpendingCapSchema },
     ]),
   ],
-  controllers: [AppController],
+  controllers: [ExpensesController],
   providers: [ExpenseService],
 })
 export class AppModule {}
