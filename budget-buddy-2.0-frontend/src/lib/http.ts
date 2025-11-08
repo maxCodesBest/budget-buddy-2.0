@@ -10,6 +10,7 @@ export function getAccessToken() {
 }
 
 const baseURL = import.meta.env.VITE_API_BASE_URL || "http://localhost:3000";
+// Primary client used across the app
 export const http = axios.create({
   baseURL,
   withCredentials: true, // send refresh cookie
@@ -17,6 +18,9 @@ export const http = axios.create({
 
 let isRefreshing = false;
 let refreshPromise: Promise<string | null> | null = null;
+
+// Separate bare client for refresh calls (no interceptors to avoid loops)
+const bare = axios.create({ baseURL, withCredentials: true });
 
 declare module "axios" {
   // Augment request config to carry our retry flag
@@ -28,7 +32,7 @@ declare module "axios" {
 async function refreshAccessToken(): Promise<string | null> {
   if (isRefreshing && refreshPromise) return refreshPromise;
   isRefreshing = true;
-  refreshPromise = http
+  refreshPromise = bare
     .post("/auth/refresh")
     .then((res) => {
       const value = res.data?.value ?? res.data;
@@ -57,7 +61,10 @@ http.interceptors.response.use(
   (res) => res,
   async (error) => {
     const original = error?.config as import("axios").InternalAxiosRequestConfig | undefined;
-    if (error?.response?.status === 401 && original && !original._retry) {
+    const url = (original?.url || "") as string;
+    // Do not attempt refresh for auth endpoints themselves
+    const isAuthEndpoint = url.includes("/auth/refresh") || url.includes("/auth/sign-in");
+    if (error?.response?.status === 401 && original && !original._retry && !isAuthEndpoint) {
       original._retry = true;
       const token = await refreshAccessToken();
       if (token) {
