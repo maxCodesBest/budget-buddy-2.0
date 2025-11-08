@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import axios from "axios";
+import { http } from "../lib/http";
 import "./monthly-table.css";
 
 type Category = {
@@ -104,7 +104,7 @@ export const ExpenseTable = () => {
 
       const results = await Promise.all(
         pairs.map(({ category, sub }) =>
-          axios
+          http
             .get(
               `http://localhost:3000/expenses/spending-cap?category=${encodeURIComponent(
                 String(category)
@@ -139,7 +139,7 @@ export const ExpenseTable = () => {
   }, []);
 
   const fetchData = async () => {
-    const res = await axios.get(
+    const res = await http.get(
       `http://localhost:3000/expenses?year=${year}&month=${month}`
     );
     const server = res.data?.value ?? res.data;
@@ -225,7 +225,7 @@ export const ExpenseTable = () => {
   };
 
   const saveData = async () => {
-    await axios.post("http://localhost:3000/expenses", data);
+    await http.post("http://localhost:3000/expenses", data);
     setSelected(null);
     alert("Saved!");
   };

@@ -44,6 +44,25 @@ $ pnpm run start:dev
 $ pnpm run start:prod
 ```
 
+## Configuration
+
+Set environment variables (e.g., in a `.env` file):
+
+```
+MONGODB_URI=mongodb://localhost:27017/budget-buddy
+MONGODB_DB=
+PORT=3000
+FRONTEND_ORIGIN=http://localhost:5173
+
+# JWT access token (short-lived)
+JWT_ACCESS_SECRET=change_me_access_secret
+JWT_ACCESS_TTL=15m
+
+# JWT refresh token (longer-lived)
+JWT_REFRESH_SECRET=change_me_refresh_secret
+JWT_REFRESH_TTL=7d
+```
+
 ## Run tests
 
 ```bash

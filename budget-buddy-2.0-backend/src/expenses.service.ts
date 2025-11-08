@@ -20,15 +20,17 @@ export class ExpenseService {
     private readonly spendingCapModel: Model<SpendingCapDocument>,
   ) {}
 
-  async getExpense(req: { year: number; month: number }) {
-    const { year, month } = req;
+  async getExpense(req: { userId: string; year: number; month: number }) {
+    const { userId, year, month } = req;
     const doc = await this.expenseModel.findOne({
+      userId,
       year: Number(year),
       month: Number(month),
     });
 
     if (doc) return doc;
     return {
+      userId,
       year: Number(year),
       month: Number(month),
       categories: {
@@ -41,25 +43,36 @@ export class ExpenseService {
     };
   }
 
-  async saveExpense(req: { year: number; month: number; categories: any }) {
-    const { year, month, categories } = req;
+  async saveExpense(req: {
+    userId: string;
+    year: number;
+    month: number;
+    categories: any;
+  }) {
+    const { userId, year, month, categories } = req;
 
     const updated = await this.expenseModel.findOneAndUpdate(
-      { year: Number(year), month: Number(month) },
-      { year: Number(year), month: Number(month), categories },
+      { userId, year: Number(year), month: Number(month) },
+      { userId, year: Number(year), month: Number(month), categories },
       { upsert: true, new: true, setDefaultsOnInsert: true },
     );
 
     return updated;
   }
 
-  async getSpendingCap(req: { category: string; subCategory: string }) {
+  async getSpendingCap(req: {
+    userId: string;
+    category: string;
+    subCategory: string;
+  }) {
+    const userId = String(req.userId || '').trim();
     const category = String(req.category || '').trim();
     const subCategory = String(req.subCategory || '').trim();
 
-    if (!category || !subCategory) return null;
+    if (!userId || !category || !subCategory) return null;
 
     const doc = await this.spendingCapModel.findOne({
+      userId,
       category,
       subCategory,
     });
@@ -67,24 +80,28 @@ export class ExpenseService {
   }
 
   async setSpendingCap(req: {
+    userId: string;
     category: string;
     subCategory: string;
     cap: number;
   }) {
+    const userId = String(req.userId || '').trim();
     const category = String(req.category || '').trim();
     const subCategory = String(req.subCategory || '').trim();
     const cap = Number(req.cap);
 
     const updated = await this.spendingCapModel.findOneAndUpdate(
-      { category, subCategory },
-      { category, subCategory, cap },
+      { userId, category, subCategory },
+      { userId, category, subCategory, cap },
       { upsert: true, new: true, setDefaultsOnInsert: true },
     );
     return updated.cap;
   }
 
-  async getAllCategoryTotals() {
-    const docs = await this.expenseModel.find({}, { categories: 1 }).lean();
+  async getAllCategoryTotals(userId: string) {
+    const docs = await this.expenseModel
+      .find({ userId }, { categories: 1 })
+      .lean();
     const totals: Record<string, number> = {};
     let grand = 0;
 
@@ -108,13 +125,13 @@ export class ExpenseService {
     return { totals, grand };
   }
 
-  async getCategorySubcategoryTotals(categoryRaw: string) {
+  async getCategorySubcategoryTotals(userId: string, categoryRaw: string) {
     const category = String(categoryRaw || '').trim();
     if (!category) return { totals: {}, grand: 0 };
 
     const docs = await this.expenseModel
       .find(
-        { [`categories.${category}`]: { $exists: true } },
+        { userId, [`categories.${category}`]: { $exists: true } },
         { categories: 1 },
       )
       .lean();
@@ -138,9 +155,9 @@ export class ExpenseService {
     return { totals, grand };
   }
 
-  async getMonthlyTotals() {
+  async getMonthlyTotals(userId: string) {
     const docs = await this.expenseModel
-      .find({}, { year: 1, month: 1, categories: 1 })
+      .find({ userId }, { year: 1, month: 1, categories: 1 })
       .lean();
 
     const points: Array<{ year: number; month: number; total: number }> = [];

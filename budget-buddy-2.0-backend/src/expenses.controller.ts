@@ -1,13 +1,19 @@
-import { Body, Controller, Get, Post, Query } from '@nestjs/common';
+import { Body, Controller, Get, Post, Query, Req } from '@nestjs/common';
 import { ExpenseService } from './expenses.service';
+import type { Request } from 'express';
 
 @Controller('expenses')
 export class ExpensesController {
   constructor(private readonly expenseService: ExpenseService) {}
 
   @Get('')
-  async getExpense(@Query('year') year: number, @Query('month') month: number) {
-    const value = await this.expenseService.getExpense({ year, month });
+  async getExpense(
+    @Query('year') year: number,
+    @Query('month') month: number,
+    @Req() req: any,
+  ) {
+    const userId = String(req.user?.userId || '');
+    const value = await this.expenseService.getExpense({ year, month, userId });
     return { value };
   }
 
@@ -16,11 +22,14 @@ export class ExpensesController {
     @Body('year') year: number,
     @Body('month') month: number,
     @Body('categories') categories: any,
+    @Req() req: any,
   ) {
+    const userId = String(req.user?.userId || '');
     const value = await this.expenseService.saveExpense({
       year,
       month,
       categories,
+      userId,
     });
     return { value };
   }
@@ -30,8 +39,11 @@ export class ExpensesController {
   async getSpendingCap(
     @Query('category') category: string,
     @Query('subCategory') subCategory: string,
+    @Req() req: any,
   ) {
+    const userId = String(req.user?.userId || '');
     const value = await this.expenseService.getSpendingCap({
+      userId,
       category,
       subCategory,
     });
@@ -43,8 +55,11 @@ export class ExpensesController {
     @Body('category') category: string,
     @Body('subCategory') subCategory: string,
     @Body('cap') cap: number,
+    @Req() req: any,
   ) {
+    const userId = String(req.user?.userId || '');
     const value = await this.expenseService.setSpendingCap({
+      userId,
       category,
       subCategory,
       cap,
@@ -53,21 +68,29 @@ export class ExpensesController {
   }
 
   @Get('totals/by-category')
-  async getTotalsByCategory() {
-    const value = await this.expenseService.getAllCategoryTotals();
+  async getTotalsByCategory(@Req() req: any) {
+    const userId = String(req.user?.userId || '');
+    const value = await this.expenseService.getAllCategoryTotals(userId);
     return { value };
   }
 
   @Get('totals/by-subcategories')
-  async getTotalsBySubcategories(@Query('category') category: string) {
-    const value =
-      await this.expenseService.getCategorySubcategoryTotals(category);
+  async getTotalsBySubcategories(
+    @Query('category') category: string,
+    @Req() req: any,
+  ) {
+    const userId = String(req.user?.userId || '');
+    const value = await this.expenseService.getCategorySubcategoryTotals(
+      userId,
+      category,
+    );
     return { value };
   }
 
   @Get('totals/by-month')
-  async getTotalsByMonth() {
-    const value = await this.expenseService.getMonthlyTotals();
+  async getTotalsByMonth(@Req() req: any) {
+    const userId = String(req.user?.userId || '');
+    const value = await this.expenseService.getMonthlyTotals(userId);
     return { value };
   }
 }

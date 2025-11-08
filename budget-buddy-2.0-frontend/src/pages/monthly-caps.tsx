@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import axios from "axios";
+import { http } from "../lib/http";
 import "./monthly-table.css";
 
 type CapsMap = Record<string, Record<string, string>>; // category -> subcategory -> cap as string (for easy input handling)
@@ -74,7 +74,7 @@ export function MonthlyCaps() {
     try {
       const results = await Promise.all(
         allPairs.map(({ category, subCategory }) =>
-          axios
+          http
             .get(
               `http://localhost:3000/expenses/spending-cap?category=${encodeURIComponent(
                 category
@@ -135,7 +135,7 @@ export function MonthlyCaps() {
             const num = parseFloat(strVal);
             if (!Number.isNaN(num) && num >= 0) {
               requests.push(
-                axios.post("http://localhost:3000/expenses/spending-cap", {
+                http.post("http://localhost:3000/expenses/spending-cap", {
                   category: cat,
                   subCategory: sub,
                   cap: num,

@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import axios from "axios";
+import { http } from "../lib/http";
 import "./monthly-table.css";
 import "./analytics.css";
 
@@ -17,7 +17,7 @@ export function Analytics() {
     async function loadAllTime() {
       // setLoading(true);
       try {
-        const res = await axios.get(
+        const res = await http.get(
           `http://localhost:3000/expenses/totals/by-category`
         );
         const byCategory: CategoryTotals = (res.data?.value?.totals ||
@@ -28,7 +28,7 @@ export function Analytics() {
         const cats = Object.keys(byCategory || {});
         const subResults = await Promise.all(
           cats.map((cat) =>
-            axios
+            http
               .get(
                 `http://localhost:3000/expenses/totals/by-subcategories?category=${encodeURIComponent(
                   cat
@@ -259,7 +259,7 @@ function MonthlyLine() {
   useEffect(() => {
     let cancelled = false;
     async function load() {
-      const res = await axios.get(
+      const res = await http.get(
         `http://localhost:3000/expenses/totals/by-month`
       );
       if (cancelled) return;
