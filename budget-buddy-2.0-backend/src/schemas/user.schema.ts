@@ -10,7 +10,7 @@ export interface UserDocument extends Document {
 
 export const UserSchema = new Schema<UserDocument>(
   {
-    username: { type: String, required: true, trim: true },
+    username: { type: String, required: true, trim: true, lowercase: true },
     passwordHash: { type: String, required: true },
     refreshTokenHash: { type: String, required: false },
   },

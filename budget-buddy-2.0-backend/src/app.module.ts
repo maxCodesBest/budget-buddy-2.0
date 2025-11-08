@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 import { APP_GUARD } from '@nestjs/core';
 import { JwtModule } from '@nestjs/jwt';
 import { ConfigModule, ConfigService } from '@nestjs/config';
+import * as Joi from 'joi';
 import { MongooseModule } from '@nestjs/mongoose';
 import { ExpensesController } from './expenses.controller';
 import { ExpenseService } from './expenses.service';
@@ -18,33 +19,33 @@ import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
 import { JwtStrategy } from './strategies/jwt.strategy';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
-
-function parseTtlToSeconds(value?: string): number {
-  if (!value) return 900; // default 15m
-  const v = String(value).trim().toLowerCase();
-  const num = Number(v);
-  if (!Number.isNaN(num)) return num; // already in seconds
-  const match = v.match(/^(\d+)(s|m|h|d)$/);
-  if (!match) return 900;
-  const amount = Number(match[1]);
-  const unit = match[2];
-  switch (unit) {
-    case 's':
-      return amount;
-    case 'm':
-      return amount * 60;
-    case 'h':
-      return amount * 60 * 60;
-    case 'd':
-      return amount * 60 * 60 * 24;
-    default:
-      return 900;
-  }
-}
+import { parseTtlToSeconds } from './utils/time';
+import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 
 @Module({
   imports: [
-    ConfigModule.forRoot({ isGlobal: true }),
+    ConfigModule.forRoot({
+      isGlobal: true,
+      validationSchema: Joi.object({
+        NODE_ENV: Joi.string().valid('development', 'test', 'production').default('development'),
+        PORT: Joi.number().default(3000),
+        FRONTEND_ORIGIN: Joi.string().uri().allow('').default('http://localhost:5173'),
+        MONGODB_URI: Joi.string().default('mongodb://localhost:27017/budget-buddy'),
+        MONGODB_DB: Joi.string().allow(''),
+        JWT_ACCESS_SECRET: Joi.when('NODE_ENV', {
+          is: 'production',
+          then: Joi.string().min(16).required(),
+          otherwise: Joi.string().allow('').default('dev_access_secret'),
+        }),
+        JWT_REFRESH_SECRET: Joi.when('NODE_ENV', {
+          is: 'production',
+          then: Joi.string().min(16).required(),
+          otherwise: Joi.string().allow('').default('dev_refresh_secret'),
+        }),
+        JWT_ACCESS_TTL: Joi.string().default('15m'),
+        JWT_REFRESH_TTL: Joi.string().default('7d'),
+      }),
+    }),
     JwtModule.registerAsync({
       inject: [ConfigService],
       useFactory: (config: ConfigService) => {
@@ -58,6 +59,13 @@ function parseTtlToSeconds(value?: string): number {
         };
       },
     }),
+    ThrottlerModule.forRoot([
+      {
+        name: 'default',
+        ttl: 60_000, // 1 minute
+        limit: 60, // 60 req/min by default
+      },
+    ]),
     MongooseModule.forRootAsync({
       inject: [ConfigService],
       useFactory: (config: ConfigService) => {
@@ -86,6 +94,10 @@ function parseTtlToSeconds(value?: string): number {
     ExpenseService,
     AuthService,
     JwtStrategy,
+    {
+      provide: APP_GUARD,
+      useClass: ThrottlerGuard,
+    },
     {
       provide: APP_GUARD,
       useClass: JwtAuthGuard,

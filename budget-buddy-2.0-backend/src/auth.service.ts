@@ -11,6 +11,8 @@ import { randomBytes, scrypt as _scrypt } from 'crypto';
 import { promisify } from 'util';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
+import { parseTtlToSeconds } from './utils/time';
+import * as argon2 from 'argon2';
 
 const scrypt = promisify(_scrypt);
 
@@ -24,7 +26,7 @@ export class AuthService {
   ) {}
 
   async signUp(usernameRaw: string, passwordRaw: string) {
-    const username = String(usernameRaw ?? '').trim();
+    const username = String(usernameRaw ?? '').trim().toLowerCase();
     const password = String(passwordRaw ?? '');
 
     if (!username || !password) {
@@ -42,9 +44,9 @@ export class AuthService {
       throw new ConflictException('username already exists');
     }
 
-    const salt = randomBytes(16).toString('hex');
-    const hashBuffer = (await scrypt(password, salt, 64)) as Buffer;
-    const passwordHash = `${salt}:${hashBuffer.toString('hex')}`;
+    const passwordHash = await argon2.hash(password, {
+      type: argon2.argon2id,
+    });
 
     const created = await this.userModel.create({
       username,
@@ -59,7 +61,7 @@ export class AuthService {
   }
 
   async signIn(usernameRaw: string, passwordRaw: string) {
-    const username = String(usernameRaw ?? '').trim();
+    const username = String(usernameRaw ?? '').trim().toLowerCase();
     const password = String(passwordRaw ?? '');
 
     if (!username || !password) {
@@ -71,13 +73,31 @@ export class AuthService {
       throw new BadRequestException('invalid credentials');
     }
 
-    const [salt, storedHex] = String(user.passwordHash || '').split(':');
-    if (!salt || !storedHex) {
-      throw new BadRequestException('invalid credentials');
+    const stored = String(user.passwordHash || '');
+    let valid = false;
+    if (stored.includes(':')) {
+      // Legacy scrypt format salt:hex
+      const [salt, storedHex] = stored.split(':');
+      if (!salt || !storedHex) throw new BadRequestException('invalid credentials');
+      const hashBuffer = (await scrypt(password, salt, 64)) as Buffer;
+      const computedHex = hashBuffer.toString('hex');
+      valid = computedHex === storedHex;
+      if (valid) {
+        // Migrate to argon2 on successful legacy login
+        try {
+          const newHash = await argon2.hash(password, { type: argon2.argon2id });
+          await this.userModel.findByIdAndUpdate(user._id, { passwordHash: newHash });
+        } catch {}
+      }
+    } else {
+      // Argon2 PHC string
+      try {
+        valid = await argon2.verify(stored, password);
+      } catch {
+        valid = false;
+      }
     }
-    const hashBuffer = (await scrypt(password, salt, 64)) as Buffer;
-    const computedHex = hashBuffer.toString('hex');
-    if (computedHex !== storedHex) {
+    if (!valid) {
       throw new BadRequestException('invalid credentials');
     }
 
@@ -134,7 +154,7 @@ export class AuthService {
   private async issueTokens(userId: string, username: string) {
     const accessTtlRaw =
       this.configService.get<string>('JWT_ACCESS_TTL') || '15m';
-    const accessExpiresIn = this.parseTtlToSeconds(accessTtlRaw);
+    const accessExpiresIn = parseTtlToSeconds(accessTtlRaw);
     const accessToken = await this.jwtService.signAsync(
       { sub: userId, username },
       {
@@ -146,7 +166,7 @@ export class AuthService {
     );
     const refreshTtlRaw =
       this.configService.get<string>('JWT_REFRESH_TTL') || '7d';
-    const refreshExpiresIn = this.parseTtlToSeconds(refreshTtlRaw);
+    const refreshExpiresIn = parseTtlToSeconds(refreshTtlRaw);
     const refreshToken = await this.jwtService.signAsync(
       { sub: userId, username },
       {
@@ -170,26 +190,5 @@ export class AuthService {
     );
   }
 
-  private parseTtlToSeconds(value?: string): number {
-    if (!value) return 900;
-    const v = String(value).trim().toLowerCase();
-    const num = Number(v);
-    if (!Number.isNaN(num)) return num;
-    const match = v.match(/^(\d+)(s|m|h|d)$/);
-    if (!match) return 900;
-    const amount = Number(match[1]);
-    const unit = match[2];
-    switch (unit) {
-      case 's':
-        return amount;
-      case 'm':
-        return amount * 60;
-      case 'h':
-        return amount * 60 * 60;
-      case 'd':
-        return amount * 60 * 60 * 24;
-      default:
-        return 900;
-    }
-  }
+  // TTL parsing is centralized in utils/time.ts
 }

@@ -16,7 +16,7 @@ const AuthContext = createContext<AuthContextType>({
   signOut: async () => {},
 });
 
-export function AuthProvider(props: { children: any }) {
+export function AuthProvider(props: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -52,7 +52,9 @@ export function AuthProvider(props: { children: any }) {
       async signOut() {
         try {
           await http.post("/auth/logout");
-        } catch {}
+        } catch (e) {
+          console.debug("signOut error (ignored)", e);
+        }
         setAccessToken(null);
         setUser(null);
       },
