@@ -14,13 +14,14 @@ const baseURL = import.meta.env.VITE_API_BASE_URL || "http://localhost:3000";
 export const http = axios.create({
   baseURL,
   withCredentials: true, // send refresh cookie
+  timeout: 10000,
 });
 
 let isRefreshing = false;
 let refreshPromise: Promise<string | null> | null = null;
 
 // Separate bare client for refresh calls (no interceptors to avoid loops)
-const bare = axios.create({ baseURL, withCredentials: true });
+const bare = axios.create({ baseURL, withCredentials: true, timeout: 10000 });
 
 declare module "axios" {
   // Augment request config to carry our retry flag
