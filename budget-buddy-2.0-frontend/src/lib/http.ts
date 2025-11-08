@@ -9,13 +9,21 @@ export function getAccessToken() {
   return accessToken;
 }
 
+const baseURL = import.meta.env.VITE_API_BASE_URL || "http://localhost:3000";
 export const http = axios.create({
-  baseURL: "http://localhost:3000",
+  baseURL,
   withCredentials: true, // send refresh cookie
 });
 
 let isRefreshing = false;
 let refreshPromise: Promise<string | null> | null = null;
+
+declare module "axios" {
+  // Augment request config to carry our retry flag
+  export interface InternalAxiosRequestConfig<D = any> {
+    _retry?: boolean;
+  }
+}
 
 async function refreshAccessToken(): Promise<string | null> {
   if (isRefreshing && refreshPromise) return refreshPromise;
@@ -48,8 +56,8 @@ http.interceptors.request.use((config) => {
 http.interceptors.response.use(
   (res) => res,
   async (error) => {
-    const original = error?.config;
-    if (error?.response?.status === 401 && !original?._retry) {
+    const original = error?.config as import("axios").InternalAxiosRequestConfig | undefined;
+    if (error?.response?.status === 401 && original && !original._retry) {
       original._retry = true;
       const token = await refreshAccessToken();
       if (token) {

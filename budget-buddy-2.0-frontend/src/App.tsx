@@ -7,6 +7,7 @@ import { Analytics } from "./pages/analytics";
 import { SignIn } from "./pages/sign-in";
 import { AuthProvider, useAuth } from "./auth/auth-context";
 import "./right-nav.css";
+import "./pages/auth.css";
 
 function App() {
   useEffect(() => {}, []);
@@ -36,8 +37,18 @@ function AuthedShell(props: {
   route: "expenses" | "caps" | "analytics" | "signin";
   setRoute: (r: "expenses" | "caps" | "analytics" | "signin") => void;
 }) {
-  const { user } = useAuth();
+  const { user, loading } = useAuth();
   const { navOpen, setNavOpen, route, setRoute } = props;
+
+  if (loading) {
+    return (
+      <div className={`app-shell ${navOpen ? "nav-open" : "nav-closed"}`}>
+        <main className="app-main" style={{ display: 'grid', placeItems: 'center', minHeight: '60vh' }}>
+          <div style={{ color: '#94a3b8' }}>Loading…</div>
+        </main>
+      </div>
+    );
+  }
 
   if (!user) {
     return (

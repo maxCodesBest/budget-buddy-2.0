@@ -10,6 +10,7 @@ import {
   SPENDING_CAP_MODEL_NAME,
   SpendingCapDocument,
 } from './schemas/spending-cap.schema';
+import type { CategoriesMap } from './dto/expenses.dto';
 
 @Injectable()
 export class ExpenseService {
@@ -47,7 +48,7 @@ export class ExpenseService {
     userId: string;
     year: number;
     month: number;
-    categories: any;
+    categories: CategoriesMap;
   }) {
     const { userId, year, month, categories } = req;
 

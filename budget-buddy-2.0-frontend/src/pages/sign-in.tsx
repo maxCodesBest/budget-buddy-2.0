@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react";
 import { useAuth } from "../auth/auth-context";
-import "./sign-up.css";
+import "./auth.css";
 
 export const SignIn = () => {
   const { signIn } = useAuth();
