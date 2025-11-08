@@ -1,6 +1,12 @@
 import { Body, Controller, Get, Post, Query, Req } from '@nestjs/common';
 import { ExpenseService } from './expenses.service';
-import type { Request } from 'express';
+import type { RequestWithUser } from './types/request-with-user';
+import {
+  GetExpenseQueryDto,
+  SaveExpenseBodyDto,
+  SetSpendingCapBodyDto,
+  SpendingCapQueryDto,
+} from './dto/expenses.dto';
 
 @Controller('expenses')
 export class ExpensesController {
@@ -8,27 +14,25 @@ export class ExpensesController {
 
   @Get('')
   async getExpense(
-    @Query('year') year: number,
-    @Query('month') month: number,
-    @Req() req: any,
+    @Query() query: GetExpenseQueryDto,
+    @Req() req: RequestWithUser,
   ) {
     const userId = String(req.user?.userId || '');
-    const value = await this.expenseService.getExpense({ year, month, userId });
+    const value = await this.expenseService.getExpense({
+      year: Number(query.year),
+      month: Number(query.month),
+      userId,
+    });
     return { value };
   }
 
   @Post('')
-  async saveExpense(
-    @Body('year') year: number,
-    @Body('month') month: number,
-    @Body('categories') categories: any,
-    @Req() req: any,
-  ) {
+  async saveExpense(@Body() body: SaveExpenseBodyDto, @Req() req: RequestWithUser) {
     const userId = String(req.user?.userId || '');
     const value = await this.expenseService.saveExpense({
-      year,
-      month,
-      categories,
+      year: Number(body.year),
+      month: Number(body.month),
+      categories: body.categories,
       userId,
     });
     return { value };
@@ -37,38 +41,35 @@ export class ExpensesController {
   // Spending cap endpoints
   @Get('spending-cap')
   async getSpendingCap(
-    @Query('category') category: string,
-    @Query('subCategory') subCategory: string,
-    @Req() req: any,
+    @Query() query: SpendingCapQueryDto,
+    @Req() req: RequestWithUser,
   ) {
     const userId = String(req.user?.userId || '');
     const value = await this.expenseService.getSpendingCap({
       userId,
-      category,
-      subCategory,
+      category: query.category,
+      subCategory: query.subCategory,
     });
     return { value };
   }
 
   @Post('spending-cap')
   async setSpendingCap(
-    @Body('category') category: string,
-    @Body('subCategory') subCategory: string,
-    @Body('cap') cap: number,
-    @Req() req: any,
+    @Body() body: SetSpendingCapBodyDto,
+    @Req() req: RequestWithUser,
   ) {
     const userId = String(req.user?.userId || '');
     const value = await this.expenseService.setSpendingCap({
       userId,
-      category,
-      subCategory,
-      cap,
+      category: body.category,
+      subCategory: body.subCategory,
+      cap: Number(body.cap),
     });
     return { value };
   }
 
   @Get('totals/by-category')
-  async getTotalsByCategory(@Req() req: any) {
+  async getTotalsByCategory(@Req() req: RequestWithUser) {
     const userId = String(req.user?.userId || '');
     const value = await this.expenseService.getAllCategoryTotals(userId);
     return { value };
@@ -77,7 +78,7 @@ export class ExpensesController {
   @Get('totals/by-subcategories')
   async getTotalsBySubcategories(
     @Query('category') category: string,
-    @Req() req: any,
+    @Req() req: RequestWithUser,
   ) {
     const userId = String(req.user?.userId || '');
     const value = await this.expenseService.getCategorySubcategoryTotals(
@@ -88,7 +89,7 @@ export class ExpensesController {
   }
 
   @Get('totals/by-month')
-  async getTotalsByMonth(@Req() req: any) {
+  async getTotalsByMonth(@Req() req: RequestWithUser) {
     const userId = String(req.user?.userId || '');
     const value = await this.expenseService.getMonthlyTotals(userId);
     return { value };
