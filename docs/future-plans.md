@@ -1,5 +1,3 @@
-Create a user management system.
-
 Add an option to save a custom template per user, so that my table and another user’s table won’t look exactly the same.
 
 Advanced research — secure integration with a bank account to retrieve a monthly expense report.
