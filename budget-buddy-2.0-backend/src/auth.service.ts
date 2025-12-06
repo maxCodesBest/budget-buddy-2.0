@@ -23,7 +23,9 @@ export class AuthService {
     private readonly userModel: Model<UserDocument>,
     private readonly jwtService: JwtService,
     private readonly configService: ConfigService,
-  ) {}
+  ) {
+    console.log('AuthService ready: maxsays this is working');
+  }
 
   async signUp(usernameRaw: string, passwordRaw: string) {
     const username = String(usernameRaw ?? '').trim().toLowerCase();
