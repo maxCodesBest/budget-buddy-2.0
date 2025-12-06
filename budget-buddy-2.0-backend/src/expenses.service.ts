@@ -35,10 +35,11 @@ export class ExpenseService {
       year: Number(year),
       month: Number(month),
       categories: {
-        Housing: {},
-        Food: {},
-        Transportation: {},
-        Hobbies: {},
+        Necessary: {},
+        'Self Investment': {},
+        Luxuries: {},
+        Car: {},
+        General: {},
         OneTime: {},
       },
     };

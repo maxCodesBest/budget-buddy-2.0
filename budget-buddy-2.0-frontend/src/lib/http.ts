@@ -13,6 +13,8 @@ const baseURL = import.meta.env.VITE_API_BASE_URL || "http://localhost:3000";
 export const http = axios.create({
   baseURL,
   withCredentials: true, // send refresh cookie
+  // Prevent indefinite hangs on network issues
+  timeout: 10000,
 });
 
 let isRefreshing = false;
@@ -57,6 +59,11 @@ http.interceptors.response.use(
   (res) => res,
   async (error) => {
     const original = error?.config as import("axios").InternalAxiosRequestConfig | undefined;
+    // Never try to refresh when the refresh call itself (or sign-in) fails
+    const url = String(original?.url || "");
+    if (url.includes("/auth/refresh") || url.includes("/auth/sign-in")) {
+      return Promise.reject(error);
+    }
     if (error?.response?.status === 401 && original && !original._retry) {
       original._retry = true;
       const token = await refreshAccessToken();

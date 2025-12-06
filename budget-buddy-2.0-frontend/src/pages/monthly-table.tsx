@@ -106,7 +106,7 @@ export const ExpenseTable = () => {
         pairs.map(({ category, sub }) =>
           http
             .get(
-              `http://localhost:3000/expenses/spending-cap?category=${encodeURIComponent(
+              `/expenses/spending-cap?category=${encodeURIComponent(
                 String(category)
               )}&subCategory=${encodeURIComponent(sub)}`
             )
@@ -139,10 +139,65 @@ export const ExpenseTable = () => {
   }, []);
 
   const fetchData = async () => {
-    const res = await http.get(
-      `http://localhost:3000/expenses?year=${year}&month=${month}`
-    );
+    const res = await http.get(`/expenses?year=${year}&month=${month}`);
     const server = res.data?.value ?? res.data;
+
+    const serverCategories: Record<
+      string,
+      Record<string, number>
+    > = (server?.categories as any) || {};
+
+    // Aliases to migrate older datasets to the new schema
+    const CATEGORY_ALIASES: Record<string, string> = {
+      Housing: "Necessary",
+      Food: "Necessary",
+      Transportation: "Car",
+      Hobbies: "Self Investment",
+    };
+    const SUB_ALIASES: Record<string, string> = {
+      Groceries: "Living groceries",
+      "Municipal tax": "Arnona (municipal tax)",
+      Arnona: "Arnona (municipal tax)",
+      Haircuts: "Cosmetics and haircuts",
+      Fuel: "Gasoline",
+      "Car insurance": "Insurance",
+      Repairs: "Maintenance",
+      Tickets: "Fines",
+    };
+
+    // Helper: pull value from matching category first; then try aliases; finally search all categories by sub name
+    const getServerValue = (category: string, sub: string) => {
+      const inCat = serverCategories?.[category]?.[sub];
+      if (inCat !== undefined && inCat !== null) return Number(inCat);
+      // Category alias (e.g., Housing -> Necessary)
+      const aliasCat = Object.keys(serverCategories).find(
+        (old) => CATEGORY_ALIASES[old] === category
+      );
+      if (aliasCat) {
+        const v = serverCategories?.[aliasCat]?.[sub];
+        if (v !== undefined && v !== null) return Number(v);
+      }
+      // Sub alias (e.g., Groceries -> Living groceries)
+      const legacyKey = Object.entries(SUB_ALIASES).find(
+        ([, current]) => current === sub
+      )?.[0];
+      if (legacyKey) {
+        const direct = serverCategories?.[category]?.[legacyKey];
+        if (direct !== undefined && direct !== null) return Number(direct);
+        if (aliasCat) {
+          const viaAlias = serverCategories?.[aliasCat]?.[legacyKey];
+          if (viaAlias !== undefined && viaAlias !== null)
+            return Number(viaAlias);
+        }
+      }
+      for (const entries of Object.values(serverCategories || {})) {
+        if (entries && Object.prototype.hasOwnProperty.call(entries, sub)) {
+          const v = (entries as Record<string, number>)[sub];
+          if (v !== undefined && v !== null) return Number(v);
+        }
+      }
+      return 0;
+    };
 
     const merged: ExpenseData = {
       year,
@@ -153,7 +208,7 @@ export const ExpenseTable = () => {
         Luxuries: {},
         Car: {},
         General: {},
-        OneTime: server?.categories?.OneTime || {},
+        OneTime: serverCategories?.OneTime || {},
       },
     };
 
@@ -163,8 +218,10 @@ export const ExpenseTable = () => {
       >
     ).forEach((cat) => {
       PRESET_SUBCATEGORIES[cat].forEach((sub) => {
-        const serverVal = server?.categories?.[cat]?.[sub];
-        (merged.categories[cat] as Category)[sub] = Number(serverVal ?? 0);
+        (merged.categories[cat] as Category)[sub] = getServerValue(
+          String(cat),
+          sub
+        );
       });
     });
 
@@ -225,7 +282,7 @@ export const ExpenseTable = () => {
   };
 
   const saveData = async () => {
-    await http.post("http://localhost:3000/expenses", data);
+    await http.post("/expenses", data);
     setSelected(null);
     alert("Saved!");
   };

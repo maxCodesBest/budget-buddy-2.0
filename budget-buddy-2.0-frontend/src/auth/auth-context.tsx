@@ -27,9 +27,14 @@ export function AuthProvider(props: { children: React.ReactNode }) {
         const res = await http.post("/auth/refresh");
         const value = res.data?.value ?? res.data;
         const access = value?.accessToken as string | undefined;
+        const refreshedUser = value?.user as User | undefined;
         if (access) setAccessToken(access);
-        const me = await http.get("/auth/me");
-        setUser((me.data?.value ?? me.data) as User);
+        if (refreshedUser) {
+          setUser(refreshedUser);
+        } else {
+          const me = await http.get("/auth/me");
+          setUser((me.data?.value ?? me.data) as User);
+        }
       } catch {
         setAccessToken(null);
         setUser(null);
@@ -45,9 +50,14 @@ export function AuthProvider(props: { children: React.ReactNode }) {
         const res = await http.post("/auth/sign-in", { username, password });
         const value = res.data?.value ?? res.data;
         const access = value?.accessToken as string | undefined;
+        const signedInUser = value?.user as User | undefined;
         if (access) setAccessToken(access);
-        const me = await http.get("/auth/me");
-        setUser((me.data?.value ?? me.data) as User);
+        if (signedInUser) {
+          setUser(signedInUser);
+        } else {
+          const me = await http.get("/auth/me");
+          setUser((me.data?.value ?? me.data) as User);
+        }
       },
       async signOut() {
         try {
