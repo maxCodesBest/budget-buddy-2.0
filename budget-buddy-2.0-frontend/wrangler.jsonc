@@ -1,7 +1,5 @@
 {
   "name": "budget-buddy-frontend",
   "compatibility_date": "2025-12-06",
-  "assets": "dist"
+  "assets": "./dist"
 }
-
-
