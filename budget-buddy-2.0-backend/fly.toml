@@ -1,10 +1,10 @@
-# fly.toml app configuration file generated for budget-buddy-2-0-backend on 2026-02-21T19:50:03+02:00
+# fly.toml app configuration file generated for budget-buddy-2-0-backend on 2026-03-08T18:01:05Z
 #
 # See https://fly.io/docs/reference/configuration/ for information about how to use this file.
 #
 
 app = 'budget-buddy-2-0-backend'
-primary_region = 'cdg'
+primary_region = 'iad'
 
 [build]
 
