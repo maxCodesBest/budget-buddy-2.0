@@ -10,7 +10,14 @@ async function bootstrap() {
   const config = app.get(ConfigService);
   const origin =
     config.get<string>('FRONTEND_ORIGIN') || 'http://localhost:5173';
-  app.enableCors({ origin, credentials: true });
+  app.enableCors({
+    origin: [
+      'https://trackly.work',
+      'https://www.trackly.work',
+      'http://localhost:5173',
+    ],
+    credentials: true,
+  });
   app.use(helmet());
   app.use(cookieParser());
   app.useGlobalPipes(
