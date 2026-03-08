@@ -36,7 +36,7 @@
 //     if (!isValid) return;
 //     try {
 //       setLoading(true);
-//       const res = await axios.post("http://localhost:3000/auth/sign-up", {
+//       const res = await axios.post(`${baseURL}/auth/sign-up`, {
 //         username,
 //         password,
 //       });

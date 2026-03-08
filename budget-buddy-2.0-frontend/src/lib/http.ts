@@ -9,7 +9,8 @@ export function getAccessToken() {
   return accessToken;
 }
 
-const baseURL = import.meta.env.VITE_API_BASE_URL || "http://localhost:3000";
+export const baseURL =
+  import.meta.env.VITE_API_BASE_URL || "http://localhost:3000";
 export const http = axios.create({
   baseURL,
   withCredentials: true, // send refresh cookie
@@ -58,7 +59,9 @@ http.interceptors.request.use((config) => {
 http.interceptors.response.use(
   (res) => res,
   async (error) => {
-    const original = error?.config as import("axios").InternalAxiosRequestConfig | undefined;
+    const original = error?.config as
+      | import("axios").InternalAxiosRequestConfig
+      | undefined;
     // Never try to refresh when the refresh call itself (or sign-in) fails
     const url = String(original?.url || "");
     if (url.includes("/auth/refresh") || url.includes("/auth/sign-in")) {
@@ -74,5 +77,5 @@ http.interceptors.response.use(
       }
     }
     return Promise.reject(error);
-  }
+  },
 );

@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { http } from "../lib/http";
+import { baseURL, http } from "../lib/http";
 import "./monthly-table.css";
 import "./analytics.css";
 
@@ -17,9 +17,7 @@ export function Analytics() {
     async function loadAllTime() {
       // setLoading(true);
       try {
-        const res = await http.get(
-          `http://localhost:3000/expenses/totals/by-category`
-        );
+        const res = await http.get(`${baseURL}/expenses/totals/by-category`);
         const byCategory: CategoryTotals = (res.data?.value?.totals ||
           {}) as CategoryTotals;
         if (cancelled) return;
@@ -30,16 +28,16 @@ export function Analytics() {
           cats.map((cat) =>
             http
               .get(
-                `http://localhost:3000/expenses/totals/by-subcategories?category=${encodeURIComponent(
-                  cat
-                )}`
+                `${baseURL}/expenses/totals/by-subcategories?category=${encodeURIComponent(
+                  cat,
+                )}`,
               )
               .then((r) => ({
                 cat,
                 totals: (r.data?.value?.totals || {}) as Record<string, number>,
               }))
-              .catch(() => ({ cat, totals: {} as Record<string, number> }))
-          )
+              .catch(() => ({ cat, totals: {} as Record<string, number> })),
+          ),
         );
         if (cancelled) return;
         const next: Record<string, Record<string, number>> = {};
@@ -162,7 +160,7 @@ function describeArc(
   cy: number,
   r: number,
   startAngle: number,
-  endAngle: number
+  endAngle: number,
 ) {
   const start = polarToCartesian(cx, cy, r, endAngle);
   const end = polarToCartesian(cx, cy, r, startAngle);
@@ -259,16 +257,14 @@ function MonthlyLine() {
   useEffect(() => {
     let cancelled = false;
     async function load() {
-      const res = await http.get(
-        `http://localhost:3000/expenses/totals/by-month`
-      );
+      const res = await http.get(`${baseURL}/expenses/totals/by-month`);
       if (cancelled) return;
       setPoints(
         (res.data?.value?.points || []) as Array<{
           year: number;
           month: number;
           total: number;
-        }>
+        }>,
       );
     }
     load();
@@ -301,12 +297,12 @@ function MonthlyLine() {
     (p) =>
       `${String(p.month).padStart(2, "0")}/${String(p.year % 100).padStart(
         2,
-        "0"
-      )}`
+        "0",
+      )}`,
   );
   const yTicks = 4; // number of segments
   const yValues = Array.from({ length: yTicks + 1 }, (_, i) =>
-    Math.round(((maxY - minY) * i) / yTicks + minY)
+    Math.round(((maxY - minY) * i) / yTicks + minY),
   );
 
   return (

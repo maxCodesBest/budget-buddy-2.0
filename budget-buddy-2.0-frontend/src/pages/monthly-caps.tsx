@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { http } from "../lib/http";
+import { baseURL, http } from "../lib/http";
 import "./monthly-table.css";
 
 type CapsMap = Record<string, Record<string, string>>; // category -> subcategory -> cap as string (for easy input handling)
@@ -63,7 +63,7 @@ export function MonthlyCaps() {
     const pairs: Array<{ category: string; subCategory: string }> = [];
     (CATEGORY_ORDER as readonly string[]).forEach((cat) => {
       PRESET_SUBCATEGORIES[cat as keyof typeof PRESET_SUBCATEGORIES].forEach(
-        (sub) => pairs.push({ category: cat, subCategory: sub })
+        (sub) => pairs.push({ category: cat, subCategory: sub }),
       );
     });
     return pairs;
@@ -76,17 +76,17 @@ export function MonthlyCaps() {
         allPairs.map(({ category, subCategory }) =>
           http
             .get(
-              `http://localhost:3000/expenses/spending-cap?category=${encodeURIComponent(
-                category
-              )}&subCategory=${encodeURIComponent(subCategory)}`
+              `${baseURL}/expenses/spending-cap?category=${encodeURIComponent(
+                category,
+              )}&subCategory=${encodeURIComponent(subCategory)}`,
             )
             .then((res) => ({
               category,
               subCategory,
               value: res.data?.value,
             }))
-            .catch(() => ({ category, subCategory, value: null }))
-        )
+            .catch(() => ({ category, subCategory, value: null })),
+        ),
       );
 
       const next: CapsMap = {};
@@ -95,12 +95,12 @@ export function MonthlyCaps() {
         PRESET_SUBCATEGORIES[cat as keyof typeof PRESET_SUBCATEGORIES].forEach(
           (sub) => {
             const found = results.find(
-              (r) => r.category === cat && r.subCategory === sub
+              (r) => r.category === cat && r.subCategory === sub,
             );
             const val = found?.value;
             next[cat][sub] =
               val === null || val === undefined ? "" : String(val);
-          }
+          },
         );
       });
       setCaps(next);
@@ -135,14 +135,14 @@ export function MonthlyCaps() {
             const num = parseFloat(strVal);
             if (!Number.isNaN(num) && num >= 0) {
               requests.push(
-                http.post("http://localhost:3000/expenses/spending-cap", {
+                http.post(`${baseURL}/expenses/spending-cap`, {
                   category: cat,
                   subCategory: sub,
                   cap: num,
-                })
+                }),
               );
             }
-          }
+          },
         );
       });
       try {
