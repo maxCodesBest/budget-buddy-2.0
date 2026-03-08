@@ -15,6 +15,12 @@
   gap: 16px;
 }
 
+@media (max-width: 768px) {
+  .analytics-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
 .analytics-card-inner {
   display: grid;
   grid-template-columns: 320px 1fr;
@@ -27,7 +33,7 @@
   min-width: 0;
 }
 
-@media (max-width: 900px) {
+@media (max-width: 768px) {
   .analytics-card-inner {
     grid-template-columns: 1fr;
   }
@@ -54,4 +60,14 @@
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+}
+
+/* Line chart shorter on small screens */
+.monthly-line-chart svg {
+  display: block;
+}
+@media (max-width: 768px) {
+  .monthly-line-chart svg {
+    height: 260px;
+  }
 }

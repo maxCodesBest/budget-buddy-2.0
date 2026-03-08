@@ -383,7 +383,8 @@ export const ExpenseTable = () => {
           {CATEGORY_ORDER.map((cat) => (
             <section className="category-card" key={cat}>
               <h3 className="category-title">{CATEGORY_LABELS[cat]}</h3>
-              <table className="expense-table">
+              <div className="expense-table-scroll">
+                <table className="expense-table">
                 <thead>
                   <tr>
                     <th>Item</th>
@@ -462,6 +463,7 @@ export const ExpenseTable = () => {
                   )}
                 </tbody>
               </table>
+              </div>
               {cat === "OneTime" && (
                 <button className="add-row-button" onClick={addOneTimeRow}>
                   + Add item

@@ -184,7 +184,8 @@ export function MonthlyCaps() {
                 <h3 className="category-title">
                   {CATEGORY_LABELS[cat as keyof typeof CATEGORY_LABELS]}
                 </h3>
-                <table className="expense-table">
+                <div className="expense-table-scroll">
+                  <table className="expense-table">
                   <thead>
                     <tr>
                       <th>Sub-category</th>
@@ -215,6 +216,7 @@ export function MonthlyCaps() {
                     ))}
                   </tbody>
                 </table>
+                </div>
               </section>
             ))}
           </div>

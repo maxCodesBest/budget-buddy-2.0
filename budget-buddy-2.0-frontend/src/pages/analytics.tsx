@@ -3,6 +3,20 @@ import { baseURL, http } from "../lib/http";
 import "./monthly-table.css";
 import "./analytics.css";
 
+function useMediaQuery(query: string): boolean {
+  const [matches, setMatches] = useState(
+    () => (typeof window !== "undefined" ? window.matchMedia(query).matches : false)
+  );
+  useEffect(() => {
+    const m = window.matchMedia(query);
+    setMatches(m.matches);
+    const listener = () => setMatches(m.matches);
+    m.addEventListener("change", listener);
+    return () => m.removeEventListener("change", listener);
+  }, [query]);
+  return matches;
+}
+
 type CategoryTotals = Record<string, number>;
 
 export function Analytics() {
@@ -10,6 +24,7 @@ export function Analytics() {
   const [categories, setCategories] = useState<
     Record<string, Record<string, number>>
   >({});
+  const isNarrow = useMediaQuery("(max-width: 768px)");
   // const [loading, setLoading] = useState<boolean>(false);
 
   useEffect(() => {
@@ -125,7 +140,11 @@ export function Analytics() {
         <section className="category-card analytics-overview">
           <h3 className="category-title">Spending by category</h3>
           <div className="analytics-card-inner">
-            <PieChart data={pieData} colors={colors} size={300} />
+            <PieChart
+              data={pieData}
+              colors={colors}
+              size={isNarrow ? 240 : 300}
+            />
             <Legend data={pieData} colors={colors} className="legend-list" />
           </div>
         </section>
@@ -139,7 +158,11 @@ export function Analytics() {
             <section className="category-card" key={cat}>
               <h3 className="category-title">{cat}</h3>
               <div className="analytics-card-inner">
-                <PieChart data={slices} colors={colors} size={280} />
+                <PieChart
+                  data={slices}
+                  colors={colors}
+                  size={isNarrow ? 220 : 280}
+                />
                 <Legend data={slices} colors={colors} className="legend-list" />
               </div>
             </section>
@@ -306,7 +329,7 @@ function MonthlyLine() {
   );
 
   return (
-    <div>
+    <div className="monthly-line-chart">
       <h3 className="category-title">Monthly total expenses</h3>
       <div style={{ display: "flex", justifyContent: "center" }}>
         <svg

@@ -68,12 +68,28 @@ function AuthedShell(props: {
         {route === "caps" && <MonthlyCaps />}
         {route === "analytics" && <Analytics />}
       </main>
+      <div
+        className="nav-backdrop"
+        onClick={() => setNavOpen(false)}
+        onKeyDown={(e) => e.key === "Escape" && setNavOpen(false)}
+        role="button"
+        tabIndex={-1}
+        aria-label="Close menu"
+      />
       <RightNav
         open={navOpen}
         onToggle={() => setNavOpen(!navOpen)}
         route={route}
         onNavigate={(r) => setRoute(r)}
       />
+      <button
+        type="button"
+        className="nav-open-fab"
+        onClick={() => setNavOpen(true)}
+        aria-label="Open menu"
+      >
+        ☰
+      </button>
     </div>
   );
 }

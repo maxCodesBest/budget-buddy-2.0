@@ -29,6 +29,12 @@
   padding: 24px 16px 48px;
 }
 
+@media (max-width: 480px) {
+  .auth-page {
+    padding: 16px 12px 32px;
+  }
+}
+
 /* Card */
 .auth-card {
   width: 100%;
@@ -54,6 +60,12 @@
   font-size: 22px;
   font-weight: 800;
   letter-spacing: 0.2px;
+}
+
+@media (max-width: 480px) {
+  .auth-header h2 {
+    font-size: 18px;
+  }
 }
 
 .auth-header p {
