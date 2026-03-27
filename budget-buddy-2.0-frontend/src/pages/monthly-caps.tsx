@@ -165,18 +165,19 @@ export function MonthlyCaps() {
         <div className="controls">
           <div className="control grow" />
           <button
-            className="save-button"
+            type="button"
+            className="btn btn--primary save-button"
             onClick={saveAll}
             disabled={saving || loading}
           >
-            {saving ? "Saving..." : "💾 Save caps"}
+            {saving ? "Saving..." : "Save caps"}
           </button>
         </div>
       </header>
 
       <div className="page-content">
         {loading ? (
-          <p style={{ padding: 12 }}>Loading...</p>
+          <p className="caps-loading">Loading…</p>
         ) : (
           <div className="categories-grid">
             {(CATEGORY_ORDER as readonly string[]).map((cat) => (

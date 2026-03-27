@@ -2,6 +2,44 @@ import { useMemo, useState } from "react";
 import { useAuth } from "../auth/auth-context";
 import "./auth.css";
 
+function IconEye() {
+  return (
+    <svg
+      width="20"
+      height="20"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden
+    >
+      <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+      <circle cx="12" cy="12" r="3" />
+    </svg>
+  );
+}
+
+function IconEyeOff() {
+  return (
+    <svg
+      width="20"
+      height="20"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden
+    >
+      <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24" />
+      <line x1="1" y1="1" x2="23" y2="23" />
+    </svg>
+  );
+}
+
 export const SignIn = () => {
   const { signIn } = useAuth();
   const [username, setUsername] = useState("");
@@ -40,11 +78,11 @@ export const SignIn = () => {
       await signIn(username, password);
       setServerSuccess(`Welcome back, ${username}!`);
       setPassword("");
-    } catch (err: any) {
-      const msg =
-        err?.response?.data?.message ||
-        err?.message ||
-        "Failed to sign in. Please try again.";
+    } catch (err: unknown) {
+      const ax = err as { response?: { data?: { message?: unknown } }; message?: string };
+      const raw =
+        ax?.response?.data?.message ?? (err instanceof Error ? err.message : null);
+      const msg = raw ?? "Failed to sign in. Please try again.";
       setServerError(Array.isArray(msg) ? msg.join(", ") : String(msg));
     } finally {
       setLoading(false);
@@ -54,9 +92,16 @@ export const SignIn = () => {
   return (
     <div className="auth-page">
       <div className="auth-card">
+        <div className="auth-brand">
+          <img className="auth-logo" src="/logo.svg" alt="" />
+          <div className="auth-brand-text">
+            <span className="auth-brand-name">Budget Buddy</span>
+            <span className="auth-brand-tagline">Sign in to continue</span>
+          </div>
+        </div>
         <header className="auth-header">
           <h2>Sign in</h2>
-          <p>Access your Budget Buddy account.</p>
+          <p>Access your expense data securely.</p>
         </header>
         <form className="auth-form" onSubmit={handleSubmit} noValidate>
           {serverError && (
@@ -73,7 +118,7 @@ export const SignIn = () => {
               value={username}
               onChange={(e) => setUsername(e.target.value)}
               placeholder="Enter your username"
-              className={usernameError ? "invalid" : ""}
+              className={`input ${usernameError ? "invalid" : ""}`}
               autoComplete="username"
               disabled={loading}
             />
@@ -91,7 +136,7 @@ export const SignIn = () => {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="Enter your password"
-                className={passwordError ? "invalid" : ""}
+                className={`input ${passwordError ? "invalid" : ""}`}
                 autoComplete="current-password"
                 disabled={loading}
               />
@@ -102,7 +147,7 @@ export const SignIn = () => {
                 aria-label={showPassword ? "Hide password" : "Show password"}
                 disabled={loading}
               >
-                {showPassword ? "🙈" : "👁️"}
+                {showPassword ? <IconEyeOff /> : <IconEye />}
               </button>
             </div>
             {passwordError && (
@@ -112,7 +157,7 @@ export const SignIn = () => {
 
           <button
             type="submit"
-            className="submit-button"
+            className="btn btn--primary"
             disabled={!isValid || loading}
           >
             {loading ? "Signing in..." : "Sign in"}
