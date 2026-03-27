@@ -85,12 +85,12 @@ export function Analytics() {
   }, [totals]);
 
   const colors = [
-    "#22d3ee",
-    "#818cf8",
-    "#34d399",
-    "#f87171",
-    "#fbbf24",
-    "#a78bfa",
+    "var(--chart-1)",
+    "var(--chart-2)",
+    "var(--chart-3)",
+    "var(--chart-4)",
+    "var(--chart-5)",
+    "var(--chart-6)",
   ];
 
   // const formatPct = (n: number) => (n * 100).toFixed(1) + "%";
@@ -239,8 +239,8 @@ function PieChart(props: {
             cx={cx}
             cy={cy}
             r={r}
-            fill="rgba(148, 163, 184, 0.15)" /* muted fill */
-            stroke="rgba(148, 163, 184, 0.35)"
+            fill="var(--color-surface-muted)"
+            stroke="var(--color-border-strong)"
             strokeWidth={1}
           />
         </>
@@ -264,7 +264,9 @@ function PieChart(props: {
               key={i}
               d={describeArc(cx, cy, r, d.start, d.end)}
               fill={colors[i % colors.length]}
-              opacity={0.9}
+              opacity={0.92}
+              stroke="var(--color-surface-raised)"
+              strokeWidth={1}
             />
           ));
         })()
@@ -345,14 +347,14 @@ function MonthlyLine() {
             width={inner.width}
             height={inner.height}
             fill="none"
-            stroke="rgba(148, 163, 184, 0.3)"
+            stroke="var(--color-border-subtle)"
           />
           {/* Y-axis label */}
           <text
             x={20}
             y={size.height / 2}
             transform={`rotate(-90 20 ${size.height / 2})`}
-            fill="#94a3b8"
+            fill="var(--color-text-secondary)"
             fontSize={12}
             textAnchor="middle"
           >
@@ -362,7 +364,7 @@ function MonthlyLine() {
           <text
             x={size.width / 2}
             y={size.height - 6}
-            fill="#94a3b8"
+            fill="var(--color-text-secondary)"
             fontSize={12}
             textAnchor="middle"
           >
@@ -376,12 +378,12 @@ function MonthlyLine() {
                 x2={margin.left}
                 y1={toY(v)}
                 y2={toY(v)}
-                stroke="rgba(148, 163, 184, 0.6)"
+                stroke="var(--color-border-strong)"
               />
               <text
                 x={margin.left - 10}
                 y={toY(v)}
-                fill="#94a3b8"
+                fill="var(--color-text-secondary)"
                 fontSize={11}
                 textAnchor="end"
                 dominantBaseline="central"
@@ -398,12 +400,12 @@ function MonthlyLine() {
                 x2={toX(i)}
                 y1={margin.top + inner.height}
                 y2={margin.top + inner.height + 4}
-                stroke="rgba(148, 163, 184, 0.6)"
+                stroke="var(--color-border-strong)"
               />
               <text
                 x={toX(i)}
                 y={margin.top + inner.height + 16}
-                fill="#94a3b8"
+                fill="var(--color-text-secondary)"
                 fontSize={11}
                 textAnchor="middle"
               >
@@ -413,14 +415,21 @@ function MonthlyLine() {
           ))}
           {/* line */}
           {points.length > 0 ? (
-            <path d={pathD} fill="none" stroke="#22d3ee" strokeWidth={2} />
+            <path
+              d={pathD}
+              fill="none"
+              stroke="var(--color-accent)"
+              strokeWidth={2}
+              strokeLinejoin="round"
+              strokeLinecap="round"
+            />
           ) : (
             <text
               x={size.width / 2}
               y={size.height / 2}
               textAnchor="middle"
               dominantBaseline="central"
-              fill="#94a3b8"
+              fill="var(--color-text-secondary)"
             >
               No data
             </text>
@@ -431,8 +440,10 @@ function MonthlyLine() {
               key={i}
               cx={toX(i)}
               cy={toY(p.total)}
-              r={3}
-              fill="#22d3ee"
+              r={3.5}
+              fill="var(--color-surface-raised)"
+              stroke="var(--color-accent)"
+              strokeWidth={2}
             />
           ))}
         </svg>
@@ -467,16 +478,19 @@ function Legend(props: {
           style={{ display: "flex", gap: 12 }}
         >
           <span
-            style={{
-              width: 12,
-              height: 12,
-              background: colors[i % colors.length],
-              borderRadius: 2,
-            }}
+            className="legend-swatch"
+            style={{ background: colors[i % colors.length] }}
           />
-          <span style={{ flex: 1 }}>{d.label}</span>
-          <strong>{(d.value || 0).toLocaleString()}</strong>
-          <span style={{ color: "#94a3b8", width: 64, textAlign: "right" }}>
+          <span className="legend-label" style={{ flex: 1, minWidth: 0 }}>
+            {d.label}
+          </span>
+          <strong className="tabular-nums">
+            {(d.value || 0).toLocaleString()}
+          </strong>
+          <span
+            className="legend-pct tabular-nums"
+            style={{ width: 64, textAlign: "right" }}
+          >
             {total > 0 ? (d.pct * 100).toFixed(1) + "%" : "0.0%"}
           </span>
         </div>

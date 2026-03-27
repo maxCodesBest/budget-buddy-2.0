@@ -372,8 +372,12 @@ export const ExpenseTable = () => {
             />
           </div>
           <div className="control grow" />
-          <button className="save-button" onClick={saveData}>
-            💾 Save
+          <button
+            type="button"
+            className="btn btn--primary save-button"
+            onClick={saveData}
+          >
+            Save changes
           </button>
         </div>
       </header>
