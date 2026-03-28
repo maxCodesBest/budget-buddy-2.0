@@ -17,9 +17,11 @@ type WeeklyNote = {
 function WeekCard({
   note,
   onReload,
+  onOpenReader,
 }: {
   note: WeeklyNote;
   onReload: () => Promise<void>;
+  onOpenReader: () => void;
 }) {
   const [lines, setLines] = useState<string[]>(() => [...note.highlights]);
   const [saving, setSaving] = useState(false);
@@ -55,7 +57,14 @@ function WeekCard({
 
   return (
     <section className="category-card weekly-note-card">
-      <h3 className="weekly-note-title">{weekRangeLabel(note.weekStart)}</h3>
+      <button
+        type="button"
+        className="weekly-note-title-btn"
+        onClick={onOpenReader}
+        aria-label={`Open full view: ${weekRangeLabel(note.weekStart)}`}
+      >
+        {weekRangeLabel(note.weekStart)}
+      </button>
       {err && <p className="weekly-notes-error">{err}</p>}
       {lines.length === 0 ? (
         <p className="weekly-notes-loading" style={{ margin: 0 }}>
@@ -70,6 +79,7 @@ function WeekCard({
               className="weekly-note-row-input"
               value={line}
               onChange={(e) => setLine(idx, e.target.value)}
+              onClick={(e) => e.stopPropagation()}
               placeholder="Highlight…"
               maxLength={500}
               aria-label={`Highlight ${idx + 1}`}
@@ -77,7 +87,10 @@ function WeekCard({
             <button
               type="button"
               className="weekly-note-remove-row"
-              onClick={() => removeRow(idx)}
+              onClick={(e) => {
+                e.stopPropagation();
+                removeRow(idx);
+              }}
               aria-label={`Remove highlight ${idx + 1}`}
             >
               ×
@@ -85,7 +98,10 @@ function WeekCard({
           </li>
         ))}
       </ul>
-      <div className="weekly-note-actions">
+      <div
+        className="weekly-note-actions"
+        onClick={(e) => e.stopPropagation()}
+      >
         <button type="button" className="btn" onClick={addRow}>
           Add line
         </button>
@@ -99,6 +115,127 @@ function WeekCard({
         </button>
       </div>
     </section>
+  );
+}
+
+function WeeklyNoteReaderModal({
+  notes,
+  index,
+  onClose,
+  onChangeIndex,
+}: {
+  notes: WeeklyNote[];
+  index: number;
+  onClose: () => void;
+  onChangeIndex: (next: number) => void;
+}) {
+  const titleId = useId();
+  const note = notes[index];
+  const canGoNewer = index > 0;
+  const canGoOlder = index < notes.length - 1;
+
+  const goNewer = () => {
+    if (canGoNewer) onChangeIndex(index - 1);
+  };
+  const goOlder = () => {
+    if (canGoOlder) onChangeIndex(index + 1);
+  };
+
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        onClose();
+        return;
+      }
+      if (e.key === "ArrowLeft") {
+        if (index > 0) {
+          e.preventDefault();
+          onChangeIndex(index - 1);
+        }
+        return;
+      }
+      if (e.key === "ArrowRight") {
+        if (index < notes.length - 1) {
+          e.preventDefault();
+          onChangeIndex(index + 1);
+        }
+      }
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [index, notes.length, onClose, onChangeIndex]);
+
+  if (!note) return null;
+
+  const trimmed = note.highlights.map((s) => s.trim()).filter((s) => s.length > 0);
+
+  return (
+    <div
+      className="weekly-notes-modal-backdrop weekly-notes-reader-backdrop"
+      role="presentation"
+      onClick={(e) => e.target === e.currentTarget && onClose()}
+    >
+      <div className="weekly-notes-reader-shell">
+        <button
+          type="button"
+          className="weekly-notes-reader-nav weekly-notes-reader-nav--prev"
+          onClick={(e) => {
+            e.stopPropagation();
+            goNewer();
+          }}
+          disabled={!canGoNewer}
+          aria-label="Newer week"
+        >
+          ‹
+        </button>
+        <div
+          className="weekly-notes-reader-panel"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby={titleId}
+          onClick={(e) => e.stopPropagation()}
+        >
+          <div className="weekly-notes-reader-header">
+            <h3 id={titleId} className="weekly-notes-reader-title">
+              {weekRangeLabel(note.weekStart)}
+            </h3>
+            <button
+              type="button"
+              className="weekly-notes-reader-close"
+              onClick={onClose}
+              aria-label="Close"
+            >
+              ×
+            </button>
+          </div>
+          <div className="weekly-notes-reader-body">
+            {trimmed.length === 0 ? (
+              <p className="weekly-notes-loading" style={{ margin: 0 }}>
+                No highlights yet.
+              </p>
+            ) : (
+              <ul className="weekly-note-highlights weekly-note-highlights-readonly">
+                {trimmed.map((line, idx) => (
+                  <li key={idx}>{line}</li>
+                ))}
+              </ul>
+            )}
+          </div>
+        </div>
+        <button
+          type="button"
+          className="weekly-notes-reader-nav weekly-notes-reader-nav--next"
+          onClick={(e) => {
+            e.stopPropagation();
+            goOlder();
+          }}
+          disabled={!canGoOlder}
+          aria-label="Older week"
+        >
+          ›
+        </button>
+      </div>
+    </div>
   );
 }
 
@@ -213,6 +350,7 @@ export function WeeklyNotes() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [addOpen, setAddOpen] = useState(false);
+  const [readerIndex, setReaderIndex] = useState<number | null>(null);
 
   const load = useCallback(async (showSpinner: boolean) => {
     if (showSpinner) setLoading(true);
@@ -233,6 +371,17 @@ export function WeeklyNotes() {
   }, [load]);
 
   const reload = useCallback(() => load(false), [load]);
+
+  useEffect(() => {
+    if (readerIndex === null) return;
+    if (notes.length === 0) {
+      setReaderIndex(null);
+      return;
+    }
+    if (readerIndex >= notes.length) {
+      setReaderIndex(notes.length - 1);
+    }
+  }, [notes, readerIndex]);
 
   return (
     <div className="expense-page">
@@ -259,8 +408,13 @@ export function WeeklyNotes() {
               Add a week and capture highlights
             </span>
           </button>
-          {notes.map((note) => (
-            <WeekCard key={note.id} note={note} onReload={reload} />
+          {notes.map((note, idx) => (
+            <WeekCard
+              key={note.id}
+              note={note}
+              onReload={reload}
+              onOpenReader={() => setReaderIndex(idx)}
+            />
           ))}
         </div>
       )}
@@ -270,6 +424,15 @@ export function WeeklyNotes() {
         onClose={() => setAddOpen(false)}
         onCreated={reload}
       />
+
+      {readerIndex !== null && notes.length > 0 ? (
+        <WeeklyNoteReaderModal
+          notes={notes}
+          index={readerIndex}
+          onClose={() => setReaderIndex(null)}
+          onChangeIndex={setReaderIndex}
+        />
+      ) : null}
     </div>
   );
 }
