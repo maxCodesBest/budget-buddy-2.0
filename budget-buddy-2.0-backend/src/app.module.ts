@@ -6,6 +6,8 @@ import * as Joi from 'joi';
 import { MongooseModule } from '@nestjs/mongoose';
 import { ExpensesController } from './expenses.controller';
 import { ExpenseService } from './expenses.service';
+import { WeeklyNotesController } from './weekly-notes.controller';
+import { WeeklyNotesService } from './weekly-notes.service';
 import {
   ExpenseSchema,
   EXPENSE_MODEL_NAME,
@@ -15,6 +17,10 @@ import {
   SPENDING_CAP_MODEL_NAME,
 } from './schemas/spending-cap.schema';
 import { USER_MODEL_NAME, UserSchema } from './schemas/user.schema';
+import {
+  WEEKLY_NOTE_MODEL_NAME,
+  WeeklyNoteSchema,
+} from './schemas/weekly-note.schema';
 import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
 import { JwtStrategy } from './strategies/jwt.strategy';
@@ -87,11 +93,13 @@ import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
       { name: EXPENSE_MODEL_NAME, schema: ExpenseSchema },
       { name: SPENDING_CAP_MODEL_NAME, schema: SpendingCapSchema },
       { name: USER_MODEL_NAME, schema: UserSchema },
+      { name: WEEKLY_NOTE_MODEL_NAME, schema: WeeklyNoteSchema },
     ]),
   ],
-  controllers: [ExpensesController, AuthController],
+  controllers: [ExpensesController, AuthController, WeeklyNotesController],
   providers: [
     ExpenseService,
+    WeeklyNotesService,
     AuthService,
     JwtStrategy,
     {
