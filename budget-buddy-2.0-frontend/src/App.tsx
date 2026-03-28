@@ -3,18 +3,20 @@ import "./App.css";
 import { ExpenseTable } from "./pages/monthly-table";
 import { MonthlyCaps } from "./pages/monthly-caps";
 import { Analytics } from "./pages/analytics";
+import { WeeklyNotes } from "./pages/weekly-notes";
 import { SignIn } from "./pages/sign-in";
 import { AuthProvider, useAuth } from "./auth/auth-context";
 import "./right-nav.css";
 import "./pages/auth.css";
 
 const ROUTE_MOBILE_TITLE: Record<
-  "expenses" | "caps" | "analytics" | "signin",
+  "expenses" | "caps" | "analytics" | "weeklyNotes" | "signin",
   string
 > = {
   expenses: "Monthly expenses",
   caps: "Monthly caps",
   analytics: "Analytics",
+  weeklyNotes: "Weekly notes",
   signin: "",
 };
 
@@ -23,7 +25,7 @@ function App() {
 
   const [navOpen, setNavOpen] = useState<boolean>(false);
   const [route, setRoute] = useState<
-    "expenses" | "caps" | "analytics" | "signin"
+    "expenses" | "caps" | "analytics" | "weeklyNotes" | "signin"
   >("expenses");
 
   return (
@@ -43,8 +45,10 @@ export default App;
 function AuthedShell(props: {
   navOpen: boolean;
   setNavOpen: (v: boolean) => void;
-  route: "expenses" | "caps" | "analytics" | "signin";
-  setRoute: (r: "expenses" | "caps" | "analytics" | "signin") => void;
+  route: "expenses" | "caps" | "analytics" | "weeklyNotes" | "signin";
+  setRoute: (
+    r: "expenses" | "caps" | "analytics" | "weeklyNotes" | "signin",
+  ) => void;
 }) {
   const { user, loading } = useAuth();
   const { navOpen, setNavOpen, route, setRoute } = props;
@@ -104,6 +108,7 @@ function AuthedShell(props: {
         {route === "expenses" && <ExpenseTable />}
         {route === "caps" && <MonthlyCaps />}
         {route === "analytics" && <Analytics />}
+        {route === "weeklyNotes" && <WeeklyNotes />}
       </main>
       <div
         className="nav-backdrop"
@@ -126,8 +131,10 @@ function AuthedShell(props: {
 function RightNav(props: {
   open: boolean;
   onToggle: () => void;
-  route: "expenses" | "caps" | "analytics" | "signin";
-  onNavigate: (r: "expenses" | "caps" | "analytics" | "signin") => void;
+  route: "expenses" | "caps" | "analytics" | "weeklyNotes" | "signin";
+  onNavigate: (
+    r: "expenses" | "caps" | "analytics" | "weeklyNotes" | "signin",
+  ) => void;
 }) {
   const { open, onToggle, route, onNavigate } = props;
   const { signOut } = useAuth();
@@ -171,6 +178,16 @@ function RightNav(props: {
             <IconChart />
           </span>
           {open && <span className="nav-label">Analytics</span>}
+        </button>
+        <button
+          type="button"
+          className={`nav-item ${route === "weeklyNotes" ? "active" : ""}`}
+          onClick={() => onNavigate("weeklyNotes")}
+        >
+          <span className="nav-icon" aria-hidden>
+            <IconJournal />
+          </span>
+          {open && <span className="nav-label">Weekly notes</span>}
         </button>
         <button type="button" className="nav-item" onClick={() => signOut()}>
           <span className="nav-icon" aria-hidden>
@@ -295,6 +312,27 @@ function IconChart() {
       <line x1="18" y1="20" x2="18" y2="10" />
       <line x1="12" y1="20" x2="12" y2="4" />
       <line x1="6" y1="20" x2="6" y2="14" />
+    </svg>
+  );
+}
+
+function IconJournal() {
+  return (
+    <svg
+      width="18"
+      height="18"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden
+    >
+      <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" />
+      <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" />
+      <line x1="8" y1="7" x2="16" y2="7" />
+      <line x1="8" y1="11" x2="14" y2="11" />
     </svg>
   );
 }
