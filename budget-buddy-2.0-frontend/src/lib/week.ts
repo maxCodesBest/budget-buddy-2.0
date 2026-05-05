@@ -1,4 +1,4 @@
-/** `lastDayYmd` is the last day of the week; returns stored first day (UTC calendar). */
+/** `lastDayYmd` is the Friday ending the week; returns stored week start (Saturday, UTC calendar). */
 export function weekFirstDayFromLastDayYmd(lastDayYmd: string): string {
   const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(lastDayYmd.trim());
   if (!m) throw new Error("Invalid date");
@@ -7,7 +7,7 @@ export function weekFirstDayFromLastDayYmd(lastDayYmd: string): string {
   const d = Number(m[3]);
   if (mo < 1 || mo > 12 || d < 1 || d > 31) throw new Error("Invalid date");
   const utc = Date.UTC(y, mo - 1, d);
-  const firstUtc = utc - 7 * 86400000;
+  const firstUtc = utc - 6 * 86400000;
   const dt = new Date(firstUtc);
   const yy = dt.getUTCFullYear();
   const mm = String(dt.getUTCMonth() + 1).padStart(2, "0");
@@ -36,11 +36,32 @@ function parseYmd(ymd: string): { y: number; m: number; d: number } {
   return { y: Number(m[1]), m: Number(m[2]), d: Number(m[3]) };
 }
 
-/** `weekStartYmd` is the first day; range runs through first + 7 days (UTC). */
+function formatUtcYmd(dt: Date): string {
+  const yy = dt.getUTCFullYear();
+  const mm = String(dt.getUTCMonth() + 1).padStart(2, "0");
+  const dd = String(dt.getUTCDate()).padStart(2, "0");
+  return `${yy}-${mm}-${dd}`;
+}
+
+/**
+ * Given any calendar day (YYYY-MM-DD, interpreted as UTC), returns the Friday
+ * that ends the Saturday–Friday Jewish week containing that day.
+ */
+export function fridayEndOfJewishWeekContainingYmd(ymd: string): string {
+  const { y, m, d } = parseYmd(ymd);
+  const ms = Date.UTC(y, m - 1, d);
+  const dow = new Date(ms).getUTCDay();
+  const daysFromSaturday = (dow + 1) % 7;
+  const saturdayMs = ms - daysFromSaturday * 86400000;
+  const fridayMs = saturdayMs + 6 * 86400000;
+  return formatUtcYmd(new Date(fridayMs));
+}
+
+/** `weekStartYmd` is Saturday; range runs through Friday (first + 6 days, UTC). */
 export function weekRangeLabel(weekStartYmd: string): string {
   const { y, m, d } = parseYmd(weekStartYmd);
   const startMs = Date.UTC(y, m - 1, d);
-  const endMs = startMs + 7 * 86400000;
+  const endMs = startMs + 6 * 86400000;
   const end = new Date(endMs);
   const sy = y;
   const sm = m - 1;

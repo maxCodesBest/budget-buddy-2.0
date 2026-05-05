@@ -13,7 +13,7 @@ export const WeeklyNoteSchema = new Schema<WeeklyNoteDocument>({
     required: true,
     index: true,
   },
-  // YYYY-MM-DD of first day of note week (UTC); last day is +7 calendar days
+  // YYYY-MM-DD of Saturday starting the note week (UTC); week runs through Friday (+6 days)
   weekStart: { type: String, required: true },
   highlights: { type: [String], default: [] },
 });

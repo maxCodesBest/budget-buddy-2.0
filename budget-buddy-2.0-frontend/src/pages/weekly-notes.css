@@ -220,6 +220,77 @@
   margin: 0 0 var(--space-3);
 }
 
+.weekly-notes-bulk-panel {
+  margin-bottom: 1.25rem;
+}
+
+.weekly-notes-bulk-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.weekly-notes-bulk-toggle {
+  margin-bottom: 0;
+}
+
+.weekly-notes-bulk-shift {
+  opacity: 0.92;
+  font-size: 0.9rem;
+}
+
+.weekly-notes-bulk-body {
+  border: 1px solid var(--border-subtle, rgba(255, 255, 255, 0.12));
+  border-radius: 8px;
+  padding: 1rem;
+  background: var(--surface-elevated, rgba(0, 0, 0, 0.2));
+}
+
+.weekly-notes-bulk-hint {
+  margin: 0 0 0.75rem;
+  font-size: 0.9rem;
+  opacity: 0.9;
+}
+
+.weekly-notes-bulk-hint code {
+  font-size: 0.85em;
+}
+
+.weekly-notes-bulk-textarea {
+  width: 100%;
+  box-sizing: border-box;
+  margin-bottom: 0.75rem;
+  padding: 0.5rem 0.65rem;
+  font: inherit;
+  line-height: 1.4;
+  border-radius: 6px;
+  border: 1px solid var(--border-subtle, rgba(255, 255, 255, 0.15));
+  background: var(--input-bg, rgba(0, 0, 0, 0.35));
+  color: inherit;
+  resize: vertical;
+  min-height: 8rem;
+}
+
+.weekly-notes-bulk-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-bottom: 0.75rem;
+}
+
+.weekly-notes-bulk-preview {
+  margin: 0;
+  padding-left: 1.25rem;
+  font-size: 0.9rem;
+}
+
+.weekly-notes-bulk-preview-meta {
+  opacity: 0.75;
+  font-weight: normal;
+}
+
 .weekly-notes-loading {
   color: var(--color-text-secondary);
   font-size: var(--text-sm);
