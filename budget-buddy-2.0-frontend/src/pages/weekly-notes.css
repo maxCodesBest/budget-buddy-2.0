@@ -98,6 +98,7 @@
   display: flex;
   gap: var(--space-2);
   align-items: flex-start;
+  unicode-bidi: isolate;
 }
 
 .weekly-note-highlights li::before {
@@ -107,10 +108,16 @@
   line-height: 1.5;
 }
 
+/* Hebrew / RTL: classic UI font; bullets follow logical start (right in rtl) */
+.weekly-note-highlights,
+.weekly-note-row-input {
+  font-family: "Heebo", var(--font-sans);
+}
+
 .weekly-note-highlights-readonly li {
   font-size: var(--text-sm);
   line-height: 1.45;
-  word-break: break-word;
+  overflow-wrap: anywhere;
 }
 
 .weekly-note-row-input {
@@ -271,18 +278,27 @@
 
 .weekly-notes-reader-close {
   flex-shrink: 0;
+  box-sizing: border-box;
+  width: 44px;
+  height: 44px;
   min-width: 44px;
   min-height: 44px;
-  display: grid;
-  place-items: center;
-  margin: calc(var(--space-2) * -1) calc(var(--space-2) * -1) 0 0;
+  padding: 0;
+  margin: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   border: 1px solid var(--color-border-subtle);
   border-radius: var(--radius-md);
   background: var(--color-surface-muted);
   color: var(--color-text-secondary);
   cursor: pointer;
-  font-size: var(--text-xl);
-  line-height: 1;
+  line-height: 0;
+}
+
+.weekly-notes-reader-close-icon {
+  display: block;
+  flex-shrink: 0;
 }
 
 .weekly-notes-reader-close:hover {

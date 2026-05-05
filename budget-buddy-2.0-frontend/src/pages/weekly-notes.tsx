@@ -71,12 +71,13 @@ function WeekCard({
           No highlights yet.
         </p>
       ) : null}
-      <ul className="weekly-note-highlights">
+      <ul className="weekly-note-highlights" dir="auto">
         {lines.map((line, idx) => (
-          <li key={idx}>
+          <li key={idx} dir="auto">
             <input
               type="text"
               className="weekly-note-row-input"
+              dir="auto"
               value={line}
               onChange={(e) => setLine(idx, e.target.value)}
               onClick={(e) => e.stopPropagation()}
@@ -205,7 +206,21 @@ function WeeklyNoteReaderModal({
               onClick={onClose}
               aria-label="Close"
             >
-              ×
+              <svg
+                className="weekly-notes-reader-close-icon"
+                width="20"
+                height="20"
+                viewBox="0 0 24 24"
+                aria-hidden
+              >
+                <path
+                  d="M6 6l12 12M18 6L6 18"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                />
+              </svg>
             </button>
           </div>
           <div className="weekly-notes-reader-body">
@@ -214,9 +229,14 @@ function WeeklyNoteReaderModal({
                 No highlights yet.
               </p>
             ) : (
-              <ul className="weekly-note-highlights weekly-note-highlights-readonly">
+              <ul
+                className="weekly-note-highlights weekly-note-highlights-readonly"
+                dir="auto"
+              >
                 {trimmed.map((line, idx) => (
-                  <li key={idx}>{line}</li>
+                  <li key={idx} dir="auto">
+                    {line}
+                  </li>
                 ))}
               </ul>
             )}
